@@ -1,0 +1,53 @@
+version: '3'
+services:
+  mage:
+    image: mageai/mageai:latest
+    container_name: mage_etl
+    depends_on:
+      - postgres
+    command: mage start mage_etl
+    env_file:
+      - .env
+    environment:
+      ENV: dev
+      POSTGRES_DB: taxis
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_HOST: postgres
+      PG_HOST_PORT: 5432
+    ports:
+      - "6789:6789"
+    volumes:
+      - .:/home/src/
+    restart: on-failure:5
+  
+  postgres:
+    image: postgres:14
+    restart: on-failure
+    container_name: postgres-magic
+    build:
+      context: ./db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: taxis
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    ports:
+      - "5432:5432"
+
+
+  pgadmin:
+    image: dpage/pgadmin4:4.23
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    depends_on:
+      - postgres
+
+volumes:
+  pgadmin:
